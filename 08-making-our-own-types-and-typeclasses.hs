@@ -12,13 +12,24 @@
  - Uncomment the following declarations to complete the implementation, and provide an implementation for instance Show Card
  -}
 
---data Suit = 
---data Digit = 
---data Card = 
+data Suit = Clubs | Diamonds | Hearts | Spades deriving (Show, Ord, Eq, Read)
+data Digit = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Show, Ord, Enum, Eq, Read, Bounded)
+data Card = Card Digit Suit deriving (Eq)
+
+instance Show Card where
+  show (Card d s) = "The " ++ (show d) ++ " of " ++ (show s)
+
+instance Ord Card where
+  (Card d1 s1) < (Card d2 s2)
+    | d1 == d2 = s1 < s2
+    | otherwise = d1 < d2
+  (Card d1 s1) <= (Card d2 s2)
+    | d1 == d2 = s1 <= s2
+    | otherwise = d1 <= d2
 
 -- We should be able to provide a function which returns the higher ranked card:
 betterCard :: Card -> Card -> Card
-betterCard x y = undefined
+betterCard x y = max x y
 
 -- Here is a new Typeclass, which represents some kind of playing hand in a game.
 -- It returns True for a "winning hand", depending on the rules for the type of class we are playing with
@@ -27,13 +38,20 @@ class Hand a where
 
 -- Implement Hand for Card, where play returns true if the list contains the Ace of Spades
 instance Hand Card where
-    play c = undefined
+    play c = foldr (\(Card d s) acc -> ((d == Ace) && (s == Spades)) || acc) False c
+
+longest :: (Ord a, Num a) => a -> a -> [Coin] -> a
+longest acc curr [] = max acc curr
+longest acc curr (c:cs)
+  | c == Tails = longest (max acc curr) 0 cs
+  | otherwise = longest acc (curr + 1) cs
 
 -- Create a new Coin type
---data Coin = 
+data Coin = Tails | Heads deriving (Eq, Show, Read, Ord, Enum, Bounded)
 
 -- Implement Hand for Coin, where play returns true if there are ten heads in a row in the list
 instance Hand Coin where
-	play c =  undefined
+    play c = (longest 0 0 c) >= 10
 
 -- Have a play with implementing Hand for some other types, for instance Int and Bool
+
